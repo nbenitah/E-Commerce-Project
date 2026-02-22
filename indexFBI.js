@@ -37,6 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Store all persons for search
             allPersons = data.items || [];
+            // If API returns no items, use mock-wanted.json
+            if (!allPersons.length) {
+                console.warn('API returned no items, loading mock data...');
+                try {
+                    const mockResponse = await fetch('mock-wanted.json');
+                    const mockData = await mockResponse.json();
+                    allPersons = mockData.items || [];
+                } catch (mockError) {
+                    console.error('Failed to load mock data:', mockError);
+                }
+            }
             renderWantedList(allPersons);
             // Render wanted list (used for search and initial display)
             function renderWantedList(persons) {
@@ -51,6 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     let imageUrl = 'https://via.placeholder.com/150';
                     if (person.images && person.images.length > 0) {
                         imageUrl = person.images[0].original;
+                        // Log image URL for debugging
+                        console.log('Image URL for', person.title, ':', imageUrl);
+                    } else {
+                        console.warn('No image found for', person.title);
                     }
                     const title = person.title || 'Unknown Name';
                     const description = person.description || 'No description available.';
@@ -60,9 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     let imgTag = '';
                     if (title.toUpperCase().includes('MOHAMMAD BASERI')) {
                         detailsLink += ` | <a href="https://www.fbi.gov/wanted/terrorinfo/mohammad-baseri/@@download.pdf" target="_blank">PDF Details</a>`;
-                        imgTag = `<img src="${imageUrl}" alt="${title}" onerror='this.onerror=null;this.src="https://www.fbi.gov/wanted/terrorinfo/mohammad-baseri/baseri2.jpg";'>`;
+                        imgTag = `<img src="${imageUrl}" alt="${title}" onerror='this.onerror=null;this.src="https://www.fbi.gov/wanted/terrorinfo/mohammad-baseri/baseri2.jpg";console.warn("Image failed for ${title}", this.src);'>`;
                     } else {
-                        imgTag = `<img src="${imageUrl}" alt="${title}">`;
+                        imgTag = `<img src="${imageUrl}" alt="${title}" onerror='this.onerror=null;this.src="https://via.placeholder.com/150";console.warn("Image failed for ${title}", this.src);'>`;
                     }
                     let detailsHtml = '';
                     if ((idx + 1) % 9 === 0) {
